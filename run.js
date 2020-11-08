@@ -1,83 +1,56 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const port = 2700;
-var AWS = require("aws-sdk");
-var multer = require("multer");
-var storege = multer.diskStorage({
-    destination : function(req,file,cb){
+const port = 1420;
+var AWS = require('aws-sdk');
+var multer = require('multer');
+var storage = multer.diskStorage({
+    destination : function (req,file,cb){
         cb(null,'/uploads');
     },
-    filename:function(req,file,cb){
+    filename: function (req,file,cb){
         cb(null,file.originalname);
     }
 })
-var upload = multer({storage:storege})
+ 
+var upload = multer({storage:storage})
 app.set("view engine","ejs");
 app.set("views","./views");
 app.use(express.urlencoded({
-    extended:true
+    extended: true
 }));
 app.use(express.json());
 AWS.config.update({
     region: "ap-southeast-1",
     endpoint: "http://dynamodb.ap-southeast-1.amazonaws.com",
-    
+    accessKeyId: "AKIA5ZA53F5AOLOOPLUG",
+    secretAccessKey: "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"
 });
 var dynamodb = new AWS.DynamoDB();
 var docClient = new AWS.DynamoDB.DocumentClient();
+ 
 
-/** Them sp*/
-let save = function(masp,ten,sl){
-    var input={
-        MaSP : masp,
-        TenSP : ten,
-        SL:sl
+function findUser (res) {
+    let params = {
+        TableName: "SanPham"
     };
-    var parmas = {
-        TableName:"SanPham",
-        Item:input
-    };
-    docClient.put(parmas,function(err,data){
-        if(err){
-            console.log("SanPham::save::error - " +JSON.stringify(err,null,2));
-        }else {
-            console.log("SanPham ::save::success");
-        }
-    });
-}
-app.get('/',(req,res) => { 
-    res.render('index.ejs');
-});
-
-
-app.post('/', (req, res) => {
-    var masp = req.body.txtma;
-    var ten = req.body.txtten;
-    var sl = req.body.txtls;
-    save(masp,ten,sl);
-    res.redirect('/DanhSachSV');
-})
-/** load sp*/
-function findUser(res){
-    let parmas={
-        TableName:"SanPham"
-    };
-    docClient.scan(parmas,function(err,data){
-        if(err){
-            console.log(JSON.stringify(err,null,2));
-        }else{
-            if(data.Items.length ===0){
-                res.end(JSON.stringify({message:'Table rỗng'}));
+    docClient.scan(params, function (err, data) {
+        if (err) {
+            console.log(JSON.stringify(err, null, 2));
+        } else {
+            if(data.Items.length === 0){
+                res.end(JSON.stringify({message :'Table rỗng '}));
             }
-            res.render('DanhSachSV.ejs',{
-                data:data.Items
+            res.render('DanhSachSP.ejs',{
+                data : data.Items
             });
         }
     });
+ 
 }
-app.get('/DanhSachSV', (req, res) => {
-    findUser(res)
-});
+app.get("/",(req,res)=>{
+    findUser(res);
+})
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
 })
