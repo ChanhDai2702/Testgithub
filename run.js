@@ -40,7 +40,7 @@ function findUser (res) {
             if(data.Items.length === 0){
                 res.end(JSON.stringify({message :'Table rỗng '}));
             }
-            res.render('DanhSachSP.ejs',{
+            res.render('XemKQ.ejs',{
                 data : data.Items
             });
         }
